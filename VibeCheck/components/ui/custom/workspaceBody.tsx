@@ -3,9 +3,11 @@ import { UserDetailContext } from '@/db/context/UserDetailContext'
 import Image from 'next/image';
 import React, { useContext, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import EmptyWorkspace from './EmptyWorkspace';
+import RepoDialog from './RepoDialog';
 import { useRouter } from 'next/navigation';
+import { refresh } from 'next/cache';
 
 function WorkspaceBody() {
 
@@ -31,17 +33,22 @@ function WorkspaceBody() {
                 <h2 className='text-blue-800 bg-blue-100 p-2 '>Remaining Credits: {userDetail?.byteCredits}</h2>
             </div>
 
-            <Card className="mt-5 flex justify-between border p-4 rounded-lg bg-white">
+            <Card className='mt-5 flex justify-between items-center p-4 border rounded-lg'>
                 <div className='flex items-center gap-5'>
-                    <img src={'/github.png'} alt='github' width={40} height={40} />
-                    <h2 className='text-lg text-black'>Connect Github & Add Repository</h2>
+                    <Image src={'/github.png'} alt='github' width={40} height={40} />
+                    <h2 className='text-lg' >Connect Github & Add Repository</h2>
                 </div>
                 <div>
-                    <Button onClick={OnAddRepo} className="bg-primary text-primary-foreground hover:bg-primary/90">+ Add Repo</Button>
+                    {!token ? <Button onClick={OnAddRepo}>Setup</Button>
+                        : <RepoDialog setRefreshPage={(refresh: boolean) => console.log} />}
                 </div>
             </Card>
 
-            <EmptyWorkspace />
+            <Card className='mt-10'>
+                <CardContent>
+                    <EmptyWorkspace />
+                </CardContent>
+            </Card>
         </div>
     )
 }
