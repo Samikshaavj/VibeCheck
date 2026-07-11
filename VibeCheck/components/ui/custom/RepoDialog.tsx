@@ -64,6 +64,10 @@ function RepoDialog({ setRefreshPage }: { setRefreshPage: (refresh: boolean) => 
             userId: userDetail?.id
         });
         console.log(result.data);
+        if (result.data?.fullError) {
+            alert("Error adding repo: " + result.data.message);
+            return;
+        }
         setIsOpen(false);
         setRefreshPage(true);
     }
