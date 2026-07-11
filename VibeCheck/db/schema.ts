@@ -17,10 +17,10 @@ export const repositories = pgTable("repositories", {
   private: text("private"),
   html_url: text("html_url"),
   description: text("description"),
-  // updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  // created_at:text("created_at"),
-  // default_branch:text("default_branch"),
-  // language:text("language"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  created_at: text("created_at"),
+  default_branch: text("default_branch"),
+  language: text("language"),
   owner: text("owner").notNull(),
 })
 
