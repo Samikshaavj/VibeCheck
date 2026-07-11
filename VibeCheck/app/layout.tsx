@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import "./globals.css";
 import type { Metadata } from "next";
+// If the Provider import below causes an issue and you no longer have it, you can remove it.
 import Provider from "./sign-up/[[...sign-up]]/provider";
 
 export const metadata: Metadata = {
@@ -16,10 +17,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body style={{ margin: 0, padding: 0 }}>
+        <body className="bg-white text-black" style={{ margin: 0, padding: 0 }}>
           <Provider>
-
-
             {children}
           </Provider>
         </body>
