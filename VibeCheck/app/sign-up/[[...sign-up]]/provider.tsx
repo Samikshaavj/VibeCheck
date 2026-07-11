@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 import { useUser } from '@clerk/nextjs';
 import { UserDetailContext } from '@/db/context/UserDetailContext';
@@ -21,9 +20,10 @@ function Provider({
     }, [user]);
     
     const CreateNewUser = async () => {
-        const result = await axios.post('/api/users', {});
+        const response = await fetch('/api/users', { method: 'POST', body: JSON.stringify({}) });
+        const result = await response.json();
         console.log("Result", result);
-        setUserDetail(result.data?.user);
+        setUserDetail(result?.user);
     }
     
     return (
