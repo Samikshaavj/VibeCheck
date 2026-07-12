@@ -22,6 +22,8 @@ export const repositories = pgTable("repositories", {
   default_branch: text("default_branch"),
   language: text("language"),
   owner: text("owner").notNull(),
+  targetDomain: varchar("target_domain").default('http://localhost:3000/'),
+  globalInstruction: text("global_instruction"),
 })
 
 export const posts = pgTable("posts", {
