@@ -74,7 +74,7 @@ function WorkspaceBody() {
 
             <div className='mt-10'>
                 {userRepoList?.length === 0 ? <EmptyWorkspace /> :
-                    <UserRepoList repoList={userRepoList} />}
+                    <UserRepoList repoList={userRepoList} token={token} />}
             </div>
         </div>
     )
