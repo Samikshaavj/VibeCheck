@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useContext, useState } from 'react'
+import { UserDetailContext } from '@/db/context/UserDetailContext'
 import Image from 'next/image'
 import { UserRepo } from './workspaceBody'
-import { LayoutList, CheckCircle2, XCircle, TrendingUp, Sparkles } from 'lucide-react'
+import { ListChecks, CheckCircle2, XCircle, TrendingUp, Sparkles, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     Accordion,
@@ -9,19 +10,97 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import axios from 'axios'
+import TestCaseList from './TestCaseList'
 
 type props = {
-    repoList: UserRepo[]
+    repoList: UserRepo[],
+    token?: string
 }
 
-function UserRepoList({ repoList }: props) {
+export type TestCase = {
+    id: number;
+    title: string;
+    description: string;
+    type: string;
+    repoId: number;
+    targetFiles: string[];
+    expectedResult: string;
+    repoName: string;
+    repoOwner: string;
+    targetRoute: string;
+}
+
+type StatusData = {
+    totalTests: number;
+    passedTests: number;
+    failedTests: number;
+    passRate: number;
+}
+
+const StatusCard = ({ title, value, icon, bgColor }: { title: string, value: any, icon: any, bgColor: string }) => (
+    <div className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
+        <div>
+            <p className="text-xs text-gray-500 font-medium">{title}</p>
+            <p className="text-2xl font-bold mt-1">{value ?? 0}</p>
+        </div>
+        <div className={`p-2 rounded-full ${bgColor}`}>
+            {icon}
+        </div>
+    </div>
+)
+
+function UserRepoList({ repoList, token }: props) {
+    const { userDetail } = useContext(UserDetailContext);
+    const [statusData, setStatusData] = useState<StatusData>();
+    const [loading, setLoading] = useState(false);
+    const [testCases, setTestCases] = useState<any[]>([]);
+    const [testCaseLoading, setTestCaseLoading] = useState(false);
+
+
+    const handleGenerateTestCases = async (repo: UserRepo) => {
+        setLoading(true);
+        try {
+            // Implement the logic to call the API route to generate test cases for
+            const result = await axios.post('/api/generate-test-cases', {
+                userId: userDetail?.id,
+                repoId: repo?.repoId,
+                owner: repo.owner,
+                repo: repo.name,
+                branch: repo.default_branch,
+                githubToken: token
+            });
+
+            console.log(result.data);
+        } catch (error) {
+            console.error("Error generating test cases:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const GetTestCases = async (repoId: number) => {
+        // Implement the logic to fetch test cases for the selected repository
+        setTestCaseLoading(true);
+        setTestCases([]);
+        const result = await axios.get(`/api/test-cases?repoId=${repoId}`);
+        setStatusData({
+            totalTests: result.data.length,
+            passedTests: 0,
+            failedTests: 0,
+            passRate: 0
+        });
+        setTestCases(result.data);
+        setTestCaseLoading(false);
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <h2 className="font-semibold text-gray-700 uppercase">Repositories</h2>
             <div className="border rounded-xl px-2">
-                <Accordion type="single" collapsible defaultValue="item-0">
+                <Accordion type="single" collapsible onValueChange={(value) => value && GetTestCases(Number(value))}>
                     {repoList?.map((repo, index) => (
-                        <AccordionItem value={`item-${index}`} key={index} className="px-4">
+                        <AccordionItem value={repo.repoId.toString()} key={index} className="px-4">
                             <AccordionTrigger className="hover:no-underline">
                                 <div className='flex items-center gap-4'>
                                     <Image src={'/github.png'} alt='github' width={24} height={24} />
@@ -34,55 +113,56 @@ function UserRepoList({ repoList }: props) {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
-                                <div className="flex flex-col gap-6 mt-4 mb-4">
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <div className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
-                                            <div>
-                                                <p className="text-xs text-gray-500 font-medium">Total Tests</p>
-                                                <p className="text-2xl font-bold mt-1">0</p>
-                                            </div>
-                                            <div className="bg-blue-100 p-2 rounded-full text-blue-600">
-                                                <LayoutList size={20} />
-                                            </div>
-                                        </div>
-                                        <div className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
-                                            <div>
-                                                <p className="text-xs text-gray-500 font-medium">Passed</p>
-                                                <p className="text-2xl font-bold mt-1">0</p>
-                                            </div>
-                                            <div className="bg-green-100 p-2 rounded-full text-green-600">
-                                                <CheckCircle2 size={20} />
-                                            </div>
-                                        </div>
-                                        <div className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
-                                            <div>
-                                                <p className="text-xs text-gray-500 font-medium">Failed</p>
-                                                <p className="text-2xl font-bold mt-1">0</p>
-                                            </div>
-                                            <div className="bg-red-100 p-2 rounded-full text-red-600">
-                                                <XCircle size={20} />
-                                            </div>
-                                        </div>
-                                        <div className="border rounded-lg p-4 flex justify-between items-center bg-white shadow-sm">
-                                            <div>
-                                                <p className="text-xs text-gray-500 font-medium">Pass Rate</p>
-                                                <p className="text-2xl font-bold mt-1">0%</p>
-                                            </div>
-                                            <div className="bg-purple-100 p-2 rounded-full text-purple-600">
-                                                <TrendingUp size={20} />
-                                            </div>
-                                        </div>
+                                <div className="pt-4 space-y-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                        <StatusCard 
+                                            title="Total Tests" 
+                                            value={statusData?.totalTests} 
+                                            icon={<ListChecks className="h-5 w-5 text-blue-600" />} 
+                                            bgColor="bg-blue-50" 
+                                        />
+                                        <StatusCard 
+                                            title="Passed" 
+                                            value={statusData?.passedTests} 
+                                            icon={<CheckCircle2 className="h-5 w-5 text-green-600" />} 
+                                            bgColor="bg-green-50" 
+                                        />
+                                        <StatusCard 
+                                            title="Failed" 
+                                            value={statusData?.failedTests} 
+                                            icon={<XCircle className="h-5 w-5 text-red-600" />} 
+                                            bgColor="bg-red-50" 
+                                        />
+                                        <StatusCard 
+                                            title="Pass Rate" 
+                                            value={`${statusData?.passRate ?? 0}%`} 
+                                            icon={<TrendingUp className="h-5 w-5 text-purple-600" />} 
+                                            bgColor="bg-purple-50" 
+                                        />
                                     </div>
 
-                                    <div className="bg-gray-50 border rounded-lg p-4 flex justify-between items-center">
+                                    {!testCaseLoading && testCases?.length > 0 && <TestCaseList testCases={testCases} onReload={() => GetTestCases(Number(repo.repoId))} />}
+
+                                    {testCaseLoading ? 
+                                        <h2 className="flex gap-2 items-center"><Loader2 className="animate-spin" /> Please Wait...</h2>
+                                    :
+                                    testCases?.length == 0 && <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900 text-sm">Generate AI Test Cases</h3>
-                                            <p className="text-xs text-gray-500 mt-1">Analyze this repository and generate automated test cases using AI.</p>
+                                            <h3 className='font-medium'>
+                                                {loading ? 'Generating Test Cases...' :
+                                                    'Generate AI Test Cases'}</h3>
+                                            <p className='text-sm text-gray-500 mt-1'>
+                                                Analyze this repository and generate automated test cases using AI.
+                                            </p>
                                         </div>
-                                        <Button className="bg-[#618b4e] hover:bg-[#527741] text-white flex items-center gap-2">
-                                            <Sparkles size={16} /> Generate Test Cases
+
+                                        <Button className='gap-2'
+                                            disabled={loading}
+                                            onClick={() => handleGenerateTestCases(repo)}>
+                                            {loading ? <Loader2 className='animate-spin' /> : <Sparkles className='h-4 w-4' />}
+                                            Generate Test Cases
                                         </Button>
-                                    </div>
+                                    </div>}
                                 </div>
                             </AccordionContent>
                         </AccordionItem>
