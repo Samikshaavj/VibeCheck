@@ -23,7 +23,9 @@ export type UserRepo = {
     owner: string;
     updatedAt: string;
     language: string;
+    targetDomain: string;
     default_branch: string;
+    globalInstruction: string;
 }
 
 function WorkspaceBody() {
@@ -72,10 +74,15 @@ function WorkspaceBody() {
                 </div>
             </Card>
 
-            <div className='mt-10'>
-                {userRepoList?.length === 0 ? <EmptyWorkspace /> :
-                    <UserRepoList repoList={userRepoList} token={token} />}
-            </div>
+            {!userRepoList?.length ? (
+                <Card className='mt-10'>
+                    <CardContent>
+                        <EmptyWorkspace />
+                    </CardContent>
+                </Card>
+            ) : (
+                <UserRepoList repoList={userRepoList} setReload={() => GetUserAddedRepoList()} />
+            )}
         </div>
     )
 }

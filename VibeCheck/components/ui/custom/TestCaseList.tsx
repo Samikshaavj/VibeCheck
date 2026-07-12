@@ -4,6 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SettingsIcon, Play, RefreshCw } from 'lucide-react'
+import TestCaseSettingDialog from './TestCaseSettingDialog'
 
 type Props = {
     testCases: TestCase[]
@@ -33,7 +34,10 @@ function TestCaseList({ testCases, onReload }: Props) {
             {testCases.map((testCase, index) => (
                 <div key={index} className='p-4 border-b flex items-center justify-between last:border-b-0'>
                     <div className='flex gap-3 items-center'>
-                        <Checkbox onCheckedChange={(checked: boolean) => handleSelectedTestCase(checked, testCase)} />
+                        <Checkbox 
+                            checked={selectedTestCases?.some((item: any) => item.id == testCase.id)}
+                            onCheckedChange={(checked: boolean) => handleSelectedTestCase(checked, testCase)} 
+                        />
                         <div>
                             <h2 className='font-semibold'>{testCase?.title}</h2>
                             <p className='text-xs text-gray-500 mt-1'>{testCase?.description}</p>
@@ -42,9 +46,7 @@ function TestCaseList({ testCases, onReload }: Props) {
                     <div className='gap-4 flex'>
                         <Badge variant={'secondary'}>{testCase?.type}</Badge>
                         <Badge variant={'secondary'}>Pending</Badge>
-                        <Button size={'icon'} variant={'outline'}>
-                            <SettingsIcon className='h-4 w-4' />
-                        </Button>
+                        <TestCaseSettingDialog testCase={testCase} setReload={onReload} />
                     </div>
                 </div>
             ))}

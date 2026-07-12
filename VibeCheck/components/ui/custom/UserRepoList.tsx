@@ -2,8 +2,9 @@ import React, { useContext, useState } from 'react'
 import { UserDetailContext } from '@/db/context/UserDetailContext'
 import Image from 'next/image'
 import { UserRepo } from './workspaceBody'
-import { ListChecks, CheckCircle2, XCircle, TrendingUp, Sparkles, Loader2 } from 'lucide-react'
+import { ListChecks, CheckCircle2, XCircle, TrendingUp, Sparkles, Loader2, Link2Icon, Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import RepoSettings from './RepoSettings'
 import {
     Accordion,
     AccordionContent,
@@ -15,6 +16,7 @@ import TestCaseList from './TestCaseList'
 
 type props = {
     repoList: UserRepo[],
+    setReload: any,
     token?: string
 }
 
@@ -50,7 +52,7 @@ const StatusCard = ({ title, value, icon, bgColor }: { title: string, value: any
     </div>
 )
 
-function UserRepoList({ repoList, token }: props) {
+function UserRepoList({ repoList, setReload }: props) {
     const { userDetail } = useContext(UserDetailContext);
     const [statusData, setStatusData] = useState<StatusData>();
     const [loading, setLoading] = useState(false);
@@ -113,7 +115,15 @@ function UserRepoList({ repoList, token }: props) {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
-                                <div className="pt-4 space-y-5">
+                                    <div className='pt-4 space-y-5'>
+                                        <div className='bg-gray-50 p-3 border rounded-xl flex items-center justify-between'>
+                                            <div className='flex gap-3 items-center'>
+                                                <Link2Icon className='text-primary' />
+                                                <h2>Target Domain:</h2>
+                                                <h2 className='bg-white p-1 px-2 border rounded-md text-primary font-medium'>{repo?.targetDomain}</h2>
+                                            </div>
+                                            <RepoSettings repo={repo} setReload={setReload} />
+                                        </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                         <StatusCard 
                                             title="Total Tests" 
